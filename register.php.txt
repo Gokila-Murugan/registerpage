@@ -1,0 +1,64 @@
+<?php // to mention that it is php document
+
+$uname1 = $_POST['uname1']; // to store the value in database and $ symbol is used to use the variable.
+$email = $_POST['email'];
+$pword1 = $_POST['pword1'];
+$pword2 = $_POST['pword2'];
+
+
+// if condition is used to check that any field should not empty (i.e) all fields should be filed.........sothat empty keyword is used..
+if (!empty($uname1) ||
+!empty($email) || !empty($pword1) || !empty($pword2))
+{
+	$host = "localhost";
+	$dbusername = "root"; // default username is root....
+	$dbpassword = "";
+	$dbname = "gokilaproject";
+
+//connection creation..
+	$conn = new mysqli ($host,$dbusername,$dbpassword,$dbname);
+
+//if we enter any wrong details then it will print error statement given below
+	if(mysqli_connect_error())
+	{
+		die('Connect Error('.mysqli_connect_errno().')'.mysqli_connect_error());
+	}
+
+	//this condition tells that once an email is registered then the email should not be registered
+	else
+	{
+		$SELECT ="SELECT email From register Where email =? Limit 1";
+		$INSERT ="INSERT Into register(uname1,email,pword1,pword2)values(?,?,?,?)"; //to insert the values in the  database
+
+//prepare statement
+
+		$stmt = $conn->prepare($SELECT);
+		$stmt->bind_param("s",$email); //s means varchar type
+		$stmt->execute();
+		$stmt->bind_result($email);
+		$stmt->store_result();
+		$rnum = $stmt->num_rows;
+
+//checking username and stores the data when no field is empty....
+		if ($rnum==0)
+		{
+			$stmt->close();
+			$stmt = $conn->prepare($INSERT);
+			$stmt->bind_param("ssss",$uname1,$email,$pword1,$pword2);
+			$stmt->execute();
+			echo "New Record Inserted";
+		}
+		else
+		{
+			echo "Some Already Registered using this mail ID";
+		}
+		$stmt->close();
+		$conn->close();
+
+		}
+	}else
+	{
+		echo "All Feild are Required";
+		die(); //used to close the server
+	}
+?>
